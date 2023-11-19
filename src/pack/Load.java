@@ -1,4 +1,4 @@
-package test;
+package pack;
 
 public class Load {
 

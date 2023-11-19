@@ -1,23 +1,27 @@
-package test;
+package pack;
+
+import java.util.Arrays;
 
 public class Edge {
-	private int weight;
+	private double weight;
 	private Vertex parent;
 	private Vertex child;
+	private Character move;
 	
-	public Edge(Vertex p, Vertex c) {
+	public Edge(Vertex p, Vertex c, Character m) {
 		parent = p;
 		child = c;
+		move = m;
 		
 		p.addOutEdge(this);
 		c.addInEdge(this);
 	}
 	
-	public void setWeight(int weight) {
-		this.weight = weight;
+	public void setWeight(double d) {
+		this.weight = d;
 	}
 	
-	public int getWeight() {
+	public double getWeight() {
 		return weight;
 	}
 	
@@ -30,6 +34,6 @@ public class Edge {
 	}
 	
 	public String toString() {
-		return "\n" + parent + " " + child + " " + weight;
+		return parent + " " + child + " " + (int) (1000.0 * weight) / 1000.0;
 	}
 }

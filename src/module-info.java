@@ -5,5 +5,5 @@
  * @author ezrazibel
  *
  */
-module tictac {
+module tictactoe {
 }
