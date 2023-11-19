@@ -1,6 +1,7 @@
-package test;
+package pack;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
@@ -24,10 +25,11 @@ public class Main {
 		controlPanel(dummy, scan);
 	}
 	
-	private static int play_game(Character[][] board, Character move, Vertex parent) {
+	private static double[] play_game(Character[][] board, Character move, Vertex parent) {
+		//if (isBoardFull(board)) {return new double[] {0.5, 1.0};}
 
 		
-		int sumEdges = 0;
+		double[] sumEdges = {0.0, 0.0};
 		for (int row = 0; row < board.length; row++) {
 			
 			for (int col = 0; col < board[row].length; col++) {
@@ -41,38 +43,68 @@ public class Main {
 				
 				final Vertex HERE = new Vertex(board);
 				
-				Edge e = new Edge(parent, HERE);
+				Edge e = new Edge(parent, HERE, move);
 				boardGraph.addEdge(e);
 				
 				//System.out.println(boardGraph.length());
 				
 				final String WON = detect_win(board);
+				double[] result = {0.0, 0.0};
 				
 				if (WON.equals(move + " win")) {
-					e.setWeight(1);
+					e.setWeight(1.0);
+					result[0] = 1.0;
+					result[1] = 1.0;
 					//return move + " win";
 				} else if (WON.equals("no win")){
+					if (isBoardFull(board)) {
+						result[0] = 0.5;
+						result[1] = 1.0;
+					} else {
 					
-					if (move.equals('x')) {move = 'o';}
-					else if (move.equals('o')) {move = 'x';}
+						if (move.equals('x')) {move = 'o';}
+						else if (move.equals('o')) {move = 'x';}
+						
+						double[] gameResult = play_game(board, move, HERE);
+						result[0] = gameResult[1] * (1 - (gameResult[0] / gameResult[1]));
+						result[1] = gameResult[1];
+						
+						if (move.equals('x')) {move = 'o';}
+						else if (move.equals('o')) {move = 'x';}
+					}
+					if (result[0] == 0.5 && result[1] == 2.0) {
+						//System.out.println(1.0 - (result[0] / result[1]));
+					}
 					
-					int result = play_game(board, move, HERE);
-					
-					if (move.equals('x')) {move = 'o';}
-					else if (move.equals('o')) {move = 'x';}
-					
-					e.setWeight(e.getWeight() - result);
+					e.setWeight(result[0] / result[1]);
+					//System.out.println(result[0] + " " + result[1] + " " + e.getWeight());
 
 
 				} else {
-					e.setWeight(-1);
+					e.setWeight(0.0);
+					result[1] = 1.0;		
+					
 					//return move + " win";
 				}
-				
-				sumEdges += e.getWeight();
+				//System.out.println(sumEdges);
+				sumEdges[0] += result[0];
+				sumEdges[1] += result[1];
+				//System.out.println(Arrays.toString(sumEdges));
 			}
 		}
+		
 		return sumEdges;
+	}
+	
+	private static boolean isBoardFull(Character[][] board) {
+		for (Character[] row : board) {
+			for (Character cell : row) {
+				if (cell.equals('-')) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	
 	private static String detect_win(Character[][] board) {
@@ -112,7 +144,6 @@ public class Main {
 			System.out.println("| " + vArray.get(i));
 		}
 		Vertex v = vArray.get(vArray.size() - 1);
-		System.out.println("Current Vertex: " + v);
 		
 		if (v.getInEdges().size() > 0) {
 			System.out.println("\nIn Edges");
@@ -145,7 +176,7 @@ public class Main {
 		do {
 			System.out.print("\n1) In edges\n2) Out edges\n");
 			ioChoice = scan.nextInt();
-			if (ioChoice > 2 || ioChoice < 0) {
+			if (ioChoice > 2 || ioChoice < 1) {
 				System.out.println("Invalid input");
 			}
 			
@@ -169,31 +200,20 @@ public class Main {
 		do {
 			System.out.print("Choose an edge number: ");
 			edgeChoice = scan.nextInt();
-			if (edgeChoice > EDGE_ARRAY.size() || edgeChoice < 0) {
+			if (edgeChoice >= EDGE_ARRAY.size() || edgeChoice < 0) {
 				System.out.println("Invalid input");
 			}
-		} while (edgeChoice > EDGE_ARRAY.size() || edgeChoice < 0);
+		} while (edgeChoice >= EDGE_ARRAY.size() || edgeChoice < 0);
 		
 		
 		//in edges go to parent while out edges go to child
-		if (ioChoice == 1) {vArray.add(EDGE_ARRAY.get(edgeChoice).getParent());}
+		
+		if (ioChoice == 1) {vArray.remove(vArray.size() - 1);}
 		else if (ioChoice == 2) {vArray.add(EDGE_ARRAY.get(edgeChoice).getChild());}
 		
-		//System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 		System.out.flush();
 		
 		controlPanel(vArray, scan);
-		
-		
-		
-		
-		
-		//start at root
-			//print out out/in edges
-			//select o/i
-			//select number
-			//print out children and parents
-			//repeat
 	}
 
 }
