@@ -17,6 +17,13 @@ public class Edge {
 		c.addInEdge(this);
 	}
 	
+	public Edge() {
+		parent = null;
+		child = null;
+		move = null;
+		weight = 0.0;
+	}
+	
 	public void setWeight(double d) {
 		this.weight = d;
 	}
@@ -35,5 +42,9 @@ public class Edge {
 	
 	public String toString() {
 		return parent + " " + child + " " + (int) (1000.0 * weight) / 1000.0;
+	}
+	
+	public Character getMove() {
+		return move;
 	}
 }
