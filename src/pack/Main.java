@@ -30,8 +30,10 @@ public class Main {
 			machine_learn(boardGraph.getEdges().get(0).getParent(), dummy1, 'x');
 		}
 		
-		
+		playProgram(boardGraph.getEdges().get(0).getParent(), true, scan);
 		controlPanel(dummy, scan);
+		
+		scan.close();
 	}
 	
 	private static double[] play_game(Character[][] board, Character move, Vertex parent) {
@@ -82,23 +84,22 @@ public class Main {
 						else if (move.equals('o')) {move = 'x';}
 					}
 					if (result[0] == 0.5 && result[1] == 2.0) {
-						//System.out.println(1.0 - (result[0] / result[1]));
+
 					}
 					
 					e.setWeight(result[0] / result[1]);
-					//System.out.println(result[0] + " " + result[1] + " " + e.getWeight());
 
 
 				} else {
 					e.setWeight(0.0);
 					result[1] = 1.0;		
 					
-					//return move + " win";
+
 				}
-				//System.out.println(sumEdges);
+
 				sumEdges[0] += result[0];
 				sumEdges[1] += result[1];
-				//System.out.println(Arrays.toString(sumEdges));
+
 			}
 		}
 		
@@ -159,7 +160,7 @@ public class Main {
 			System.out.println("\n#  parent    child     value");			
 			//prints out all in edges
 			for (Edge e : v.getInEdges()) {
-				System.out.println(v.getInEdges().indexOf(e) + ") " + e);
+				System.out.println(v.getInEdges().indexOf(e) + 1 + ") " + e);
 			}
 		} else {
 			System.out.println("There are no incoming edges");
@@ -171,7 +172,7 @@ public class Main {
 			
 			//prints out all out edges
 			for (Edge e : v.getOutEdges()) {
-				System.out.println(v.getOutEdges().indexOf(e) + ") " + e);
+				System.out.println(v.getOutEdges().indexOf(e) + 1 + ") " + e);
 			}
 		} else {
 			System.out.println("There are no outgoing edges");
@@ -208,7 +209,7 @@ public class Main {
 		int edgeChoice = 0;
 		do {
 			System.out.print("Choose an edge number: ");
-			edgeChoice = scan.nextInt();
+			edgeChoice = scan.nextInt() - 1;
 			if (edgeChoice >= EDGE_ARRAY.size() || edgeChoice < 0) {
 				System.out.println("Invalid input");
 			}
@@ -226,6 +227,8 @@ public class Main {
 	}
 
 	private static double machine_learn(Vertex v, ArrayList<Edge> picked, Character move) {
+
+		//machine learning moment
 		final String WON = detect_win(v.getValue());
 		
 		Edge PICKED_LAST = null;
@@ -243,9 +246,10 @@ public class Main {
 				return 0.5;
 			}
 			
+			//find most valuable move
 			Edge mostValued = v.getOutEdges().get(0);
 			for (Edge e : v.getOutEdges()) {
-				if (mostValued.getWeight() < e.getWeight()) {
+				if (e.getWeight() > mostValued.getWeight()) {
 					mostValued = e;
 				}
 			}
@@ -259,12 +263,12 @@ public class Main {
 			final double RESULT =  1 - machine_learn(mostValued.getChild(), picked, move);
 			
 			if (RESULT == 1.0) {
-				//win
+				//win - increase move's value
 				PICKED_LAST.setWeight(PICKED_LAST.getWeight() + 0.01 * (picked.size()));
 				picked.remove(PICKED_LAST);
 				return 1.0;
 			} else if (RESULT == 0.0) {
-				//lose
+				//lose - decrease move's value
 				PICKED_LAST.setWeight(PICKED_LAST.getWeight() - 0.01 * (picked.size()));
 				picked.remove(PICKED_LAST);
 				return 0.0;
@@ -279,19 +283,41 @@ public class Main {
 			picked.remove(PICKED_LAST);
 			return 0.0;
 		}
-		
-		
-
-
-		//play game
-			//vertex
-			//choose most valuable option
-			//record option picked
-			//recurse
-		//w/l
-			//w
-				//+0.01 for all picked
-			//l
-				//-0.01 for all picked
 	}
+
+	private static void playProgram(Vertex v, boolean humanMove, Scanner scan) {
+		if (v.getOutEdges().size() == 0) {
+			System.out.println("Current Board\n" + v.getHumanReadableString() + "\n");
+			String output = "";
+			if (humanMove) {output = "Program ";}
+			else {output = "Human ";}
+			System.out.println(output + "wins!");
+			return;
+		}
+		if (humanMove) {
+			System.out.println("Current Board\n" + v.getHumanReadableString() + "\n");
+
+			System.out.print(Vertex.getHumanReadableListe(v.getOutEdges()) + "\nChoose your move: ");
+			
+			playProgram(v.getOutEdges().get(scan.nextInt() - 1).getChild(), false, scan);
+			
+		} else {
+			//program finds best move and plays it
+			Edge MOST_VALUED = v.getOutEdges().get(0);
+			for (Edge e : v.getOutEdges()) {
+				if (e.getWeight() > MOST_VALUED.getWeight()) {
+					MOST_VALUED = e;
+				}
+				
+				
+			}
+			
+			playProgram(MOST_VALUED.getChild(), true, scan);
+		}
+		//board state
+			//you make move
+			//program makes move
+		//repeat until you lose
+	}
+		
 }
