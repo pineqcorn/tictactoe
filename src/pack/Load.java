@@ -4,16 +4,26 @@ public class Load {
 
 	
 	public static void loading(int loadLength, int maxValue, int currentValue) {
+		if (currentValue > maxValue) {
+			throw new Error("Current value of " + currentValue + " is higher than maximum value of " + maxValue);
+		}
+		
 		//if percentage would remain unchanged
 		//removes unnecessary prints
-		if (((int) Math.ceil(1000.0 * currentValue / maxValue)) == ((int) Math.ceil(1000.0 * (currentValue - 1) / maxValue))) {
+		final double PERCENTAGE = ((int) Math.ceil(1000.0 * currentValue / maxValue));
+		final double PREV_PERCENTAGE = ((int) Math.ceil(1000.0 * (currentValue - 1) / maxValue));
+		if (PERCENTAGE == PREV_PERCENTAGE) {
 			return;
 		}
 		
 		System.out.print("[" + repeat("=", (int) Math.ceil(currentValue * loadLength / (1.0 * maxValue)))); 
-		System.out.print(repeat(" ", 20 - (int) Math.ceil(currentValue * loadLength / (1.0 * maxValue))) + "]");
-		System.out.print(" " + ((int) Math.ceil(1000.0 * currentValue / maxValue)) / 10.0 + "%");
+		System.out.print(repeat(" ", loadLength - (int) Math.ceil(currentValue * loadLength / (1.0 * maxValue))) + "]");
+		System.out.print(" " + PERCENTAGE / 10.0 + "%");
 		System.out.print("\r");
+		
+		if (PERCENTAGE == 1000) {
+			System.out.print("[" + repeat(" ", loadLength) + "]   \t  \t\r");
+		}
 		try {
 			Thread.sleep(1);
 		} catch (InterruptedException e) {

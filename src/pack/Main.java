@@ -7,6 +7,7 @@ import java.util.Scanner;
 public class Main {
 
 	private static Graph boardGraph = new Graph(null);
+	private static int total = 0;
 
 	public static void main(String[] args) {
 		Character[][] board = new Character[3][3];
@@ -22,17 +23,25 @@ public class Main {
 		ArrayList<Vertex> dummy = new ArrayList<Vertex>();
 		dummy.add(boardGraph.getEdges().get(0).getParent());
 		
+		final int RUNS = 10000000;
+		for (int i = 0; i < RUNS; i++) {
+			Load.loading(20, RUNS, i);
+			ArrayList<Edge> dummy1 = new ArrayList<Edge>();
+			machine_learn(boardGraph.getEdges().get(0).getParent(), dummy1, 'x');
+		}
+		
+		
 		controlPanel(dummy, scan);
 	}
 	
 	private static double[] play_game(Character[][] board, Character move, Vertex parent) {
-		//if (isBoardFull(board)) {return new double[] {0.5, 1.0};}
-
-		
 		double[] sumEdges = {0.0, 0.0};
 		for (int row = 0; row < board.length; row++) {
 			
 			for (int col = 0; col < board[row].length; col++) {
+				total++;
+				Load.loading(20, 2653002, total);
+				
 				board = parent.getValue();
 			
 				
@@ -216,4 +225,73 @@ public class Main {
 		controlPanel(vArray, scan);
 	}
 
+	private static double machine_learn(Vertex v, ArrayList<Edge> picked, Character move) {
+		final String WON = detect_win(v.getValue());
+		
+		Edge PICKED_LAST = null;
+		if (picked.size() > 0) {
+			PICKED_LAST = picked.get(picked.size() - 1);
+		}
+		
+		if (WON.equals(move + " won")) {
+			PICKED_LAST.setWeight(PICKED_LAST.getWeight() + 0.01 * (picked.size()));
+			picked.remove(PICKED_LAST);
+			return 1.0;
+		} else if (WON.equals("no win")) {
+			if (isBoardFull(v.getValue())) {
+				picked.remove(PICKED_LAST);
+				return 0.5;
+			}
+			
+			Edge mostValued = v.getOutEdges().get(0);
+			for (Edge e : v.getOutEdges()) {
+				if (mostValued.getWeight() < e.getWeight()) {
+					mostValued = e;
+				}
+			}
+			
+			picked.add(mostValued);
+			PICKED_LAST = mostValued;
+			
+			if (move.equals('x')) {move = 'o';}
+			else if (move.equals('o')) {move = 'x';}
+			
+			final double RESULT =  1 - machine_learn(mostValued.getChild(), picked, move);
+			
+			if (RESULT == 1.0) {
+				//win
+				PICKED_LAST.setWeight(PICKED_LAST.getWeight() + 0.01 * (picked.size()));
+				picked.remove(PICKED_LAST);
+				return 1.0;
+			} else if (RESULT == 0.0) {
+				//lose
+				PICKED_LAST.setWeight(PICKED_LAST.getWeight() - 0.01 * (picked.size()));
+				picked.remove(PICKED_LAST);
+				return 0.0;
+			} else {
+				//tie
+				picked.remove(PICKED_LAST);
+				return 0.5;
+			}
+			
+		} else {
+			PICKED_LAST.setWeight(PICKED_LAST.getWeight() - 0.01 * (picked.size()));
+			picked.remove(PICKED_LAST);
+			return 0.0;
+		}
+		
+		
+
+
+		//play game
+			//vertex
+			//choose most valuable option
+			//record option picked
+			//recurse
+		//w/l
+			//w
+				//+0.01 for all picked
+			//l
+				//-0.01 for all picked
+	}
 }

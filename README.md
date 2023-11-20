@@ -1,8 +1,6 @@
 # Tictactoe
-Determines best possible moves in a game of tic-tac-toe
-WIP
+algorithm determines best possible moves in game of tic-tac-toe
 
-## Future additions?
-adding mega tictacoe (3x3 of tictactoe)
-adding 3d tictactoe
-mega 3d?
+## Dependencies
+Uses JRE System Library 17.0.5
+Unknown if others will work
